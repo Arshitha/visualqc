@@ -5,7 +5,6 @@ Module to rate defaced MRI scans, optionally with their 3D renders
 """
 
 import argparse
-import re
 import sys
 import textwrap
 import warnings
@@ -39,14 +38,14 @@ class DefacingInterface(BaseReviewInterface):
     """Custom interface to rate the quality of defacing in an MRI scan"""
 
     def __init__(
-        self,
-        fig,
-        axes,
-        issue_list=cfg.defacing_default_issue_list,
-        next_button_callback=None,
-        quit_button_callback=None,
-        processing_choice_callback=None,
-        map_key_to_callback=None,
+            self,
+            fig,
+            axes,
+            issue_list=cfg.defacing_default_issue_list,
+            next_button_callback=None,
+            quit_button_callback=None,
+            processing_choice_callback=None,
+            map_key_to_callback=None,
     ):
         """Constructor"""
 
@@ -239,9 +238,9 @@ class DefacingInterface(BaseReviewInterface):
 
         # right or double click to zoom in to any axis
         if (
-            (event.button in [3] or event.dblclick)
-            and (event.inaxes is not None)
-            and (not check_event_in_axes(event, self.unzoomable_axes))
+                (event.button in [3] or event.dblclick)
+                and (event.inaxes is not None)
+                and (not check_event_in_axes(event, self.unzoomable_axes))
         ):
             self.prev_ax_pos = event.inaxes.get_position()
             event.inaxes.set_position(cfg.zoomed_position)
@@ -294,17 +293,17 @@ class RatingWorkflowDefacing(BaseWorkflowVisualQC, ABC):
     """Rating workflow for defaced MRI scans"""
 
     def __init__(
-        self,
-        id_list,
-        images_for_id,
-        in_dir,
-        out_dir,
-        defaced_name,
-        mri_name,
-        render_name,
-        issue_list=cfg.defacing_default_issue_list,
-        vis_type="defacing",
-        screenshot_only=cfg.default_screenshot_only,
+            self,
+            id_list,
+            images_for_id,
+            in_dir,
+            out_dir,
+            defaced_name,
+            mri_name,
+            render_name,
+            issue_list=cfg.defacing_default_issue_list,
+            vis_type="defacing",
+            screenshot_only=cfg.default_screenshot_only,
     ):
         """Constructor"""
 
@@ -341,11 +340,11 @@ class RatingWorkflowDefacing(BaseWorkflowVisualQC, ABC):
         pass
 
     def init_layout(
-        self,
-        view_set=cfg.defacing_view_set,
-        num_rows_per_view=cfg.defacing_num_rows_per_view,
-        num_slices_per_view=cfg.defacing_num_slices_per_view,
-        padding=cfg.default_padding,
+            self,
+            view_set=cfg.defacing_view_set,
+            num_rows_per_view=cfg.defacing_num_rows_per_view,
+            num_slices_per_view=cfg.defacing_num_slices_per_view,
+            padding=cfg.default_padding,
     ):
         """initializes the layout"""
 
@@ -495,8 +494,8 @@ class RatingWorkflowDefacing(BaseWorkflowVisualQC, ABC):
 
         skip_subject = False
         if (
-            np.count_nonzero(self.defaced_img) == 0
-            or np.count_nonzero(self.orig_img) == 0
+                np.count_nonzero(self.defaced_img) == 0
+                or np.count_nonzero(self.orig_img) == 0
         ):
             skip_subject = True
             print("Defaced or original MR image is empty!")
@@ -568,7 +567,7 @@ class RatingWorkflowDefacing(BaseWorkflowVisualQC, ABC):
 
         ax_counter = 0
         for dim, slice_num, (defaced, orig) in self.slice_picker.get_slices_multi(
-            [self.defaced_img, self.orig_img], extended=True
+                [self.defaced_img, self.orig_img], extended=True
         ):
             ax = self.collage.flat_grid[ax_counter]
             if vis_type in ("mixed",):
@@ -610,12 +609,6 @@ class RatingWorkflowDefacing(BaseWorkflowVisualQC, ABC):
 
 def get_parser():
     """Parser to specify arguments and their defaults."""
-
-    parser = argparse.ArgumentParser(
-        prog="visualqc_defacing",
-        formatter_class=argparse.RawTextHelpFormatter,
-        description="visualqc_defacing: rate quality " "of defaced MR scan.",
-    )
 
     help_text_user_dir = textwrap.dedent(
         """
@@ -685,7 +678,11 @@ def get_parser():
         )
     )
 
-    in_out = parser.add_argument_group("Input and output", " ")
+    parser = argparse.ArgumentParser(
+        prog="visualqc_defacing",
+        formatter_class=argparse.RawTextHelpFormatter,
+        description="visualqc_defacing: rate quality of defaced MR scan.",
+    )
 
     io_subparser = parser.add_subparsers(help="sub-command help")
 
@@ -696,20 +693,28 @@ def get_parser():
     parser_bids.add_argument(
         "bids_dir",
         type=Path,
-        required=True,
         help="Path to BIDS formatted directory with defaced images.",
     )
     parser_bids.add_argument(
-        "-m", "--mri-filename-pattern", dest="mri_pattern", required=True,
-        help="Pattern that represents names of un-defaced original scans."
+        "-m",
+        "--mri-filename-pattern",
+        dest="mri_pattern",
+        required=True,
+        help="Pattern that represents names of un-defaced original scans.",
     )
     parser_bids.add_argument(
-        "-d", "--defaced-filename-pattern", dest="defaced_pattern", required=True,
-        help="Pattern that represents names of defaced scans."
+        "-d",
+        "--defaced-filename-pattern",
+        dest="defaced_pattern",
+        required=True,
+        help="Pattern that represents names of defaced scans.",
     )
+
     # create a parser for the 'non-bids' command
-    parser_non_bids = io_subparser.add_parser("non-bids", help="QC defaced images in a non-BIDS formatted user directory.")
-    in_out.add_argument(
+    parser_non_bids = io_subparser.add_parser(
+        "non-bids", help="QC defaced images in a non-BIDS formatted user directory."
+    )
+    parser_non_bids.add_argument(
         "--user_dir",
         "-u",
         action="store",
@@ -720,7 +725,7 @@ def get_parser():
         nargs=1,
     )
 
-    in_out.add_argument(
+    parser_non_bids.add_argument(
         "-d",
         "--defaced_name",
         action="store",
@@ -730,7 +735,7 @@ def get_parser():
         help=help_text_defaced_mri_name,
     )
 
-    in_out.add_argument(
+    parser_non_bids.add_argument(
         "-m",
         "--mri_name",
         action="store",
@@ -740,11 +745,17 @@ def get_parser():
         help=help_text_mri_name,
     )
 
-    in_out.add_argument("-r", "--render_name", action="store", dest="render_name",
-                        default=cfg.default_render_name, required=False,
-                        help=help_text_render_name)
+    parser_non_bids.add_argument(
+        "-r",
+        "--render_name",
+        action="store",
+        dest="render_name",
+        default=cfg.default_render_name,
+        required=False,
+        help=help_text_render_name,
+    )
 
-    in_out.add_argument(
+    parser_non_bids.add_argument(
         "-o",
         "--out_dir",
         action="store",
@@ -754,7 +765,7 @@ def get_parser():
         default=None,
     )
 
-    in_out.add_argument(
+    parser_non_bids.add_argument(
         "-i",
         "--id_list",
         action="store",
@@ -764,7 +775,7 @@ def get_parser():
         help=help_text_id_list,
     )
 
-    in_out.add_argument(
+    parser_non_bids.add_argument(
         "-so",
         "--screenshot_only",
         dest="screenshot_only",

@@ -7,7 +7,7 @@ __pycache__/
 example_datasets
 docs/logo
 *.xdebug_tksurfer
-.idea/
+.idea/*
 
 # C extensions
 *.so
@@ -71,3 +71,4 @@ target/
 # pyenv python configuration file
 .python-version
 data/
+.idea/
