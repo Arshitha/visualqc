@@ -5,6 +5,7 @@ Module to rate defaced MRI scans, optionally with their 3D renders
 """
 
 import argparse
+import subprocess
 import sys
 import textwrap
 import warnings
@@ -425,21 +426,29 @@ class RatingWorkflowDefacing(BaseWorkflowVisualQC, ABC):
         """Brings up an alert if subject id is detected to be an outlier."""
         pass
 
-    def generate_3d_renders(defaced_img, render_outdir):
+    def generate_3d_renders(self):
+        all_defaced_imgs = list(Path(self.in_dir).rglob(self.defaced_name))
         rotations = [(45, 5, 10), (-45, 5, 10), (30, 10, 15)]
-        for idx, rot in enumerate(rotations):
-            yaw, pitch, roll = rot[0], rot[1], rot[2]
-            outfile = render_outdir.joinpath("defaced_render_0" + str(idx) + ".png")
-            if not outfile.exists():
-                if "T2w" in render_outdir.parts:
-                    fsleyes_render_cmd = f"fsleyes render --scene 3d -rot {yaw} {pitch} {roll} --outfile {outfile} {defaced_img} -dr 80 1000 -in spline -cm render1 -bf 0.3 -r 100 -ns 500;"
-                else:
-                    fsleyes_render_cmd = f"fsleyes render --scene 3d -rot {yaw} {pitch} {roll} --outfile {outfile} {defaced_img} -dr 20 250 -in spline -cm render1 -bf 0.3 -r 100 -ns 500;"
-                cmd = f"export TMP_DISPLAY=$DISPLAY; unset DISPLAY; {fsleyes_render_cmd} export DISPLAY=$TMP_DISPLAY"
-
-                print(cmd)
-                run_command(cmd, "")
-                print(f"Has the render been created? {outfile.exists()}")
+        for defaced_img in all_defaced_imgs:
+            for idx, rot in enumerate(rotations):
+                yaw, pitch, roll = rot[0], rot[1], rot[2]
+                outfile = defaced_img.parent.joinpath(
+                    "defaced_render_0" + str(idx) + ".png"
+                )
+                if not outfile.exists():
+                    if "T2w" in defaced_img.parent.parts:
+                        fsleyes_render_cmd = f"fsleyes render --scene 3d -rot {yaw} {pitch} {roll} --outfile {outfile} {defaced_img} -dr 80 1000 -in spline -cm render1 -bf 0.3 -r 100 -ns 500;"
+                    else:
+                        fsleyes_render_cmd = f"fsleyes render --scene 3d -rot {yaw} {pitch} {roll} --outfile {outfile} {defaced_img} -dr 20 250 -in spline -cm render1 -bf 0.3 -r 100 -ns 500;"
+                    cmd = f"export TMP_DISPLAY=$DISPLAY; unset DISPLAY; {fsleyes_render_cmd} export DISPLAY=$TMP_DISPLAY"
+                    subprocess.run(
+                        cmd,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT,
+                        encoding="utf8",
+                        shell=True,
+                    )
+                    print(f"Has the render been created? {outfile.exists()}")
 
     def load_unit(self, unit_id):
         """Loads the image data for display."""
@@ -799,7 +808,7 @@ def make_workflow_from_user_options():
     try:
         user_args = parser.parse_args()
     except:
-        parser.exit(1)
+        parser.exit(1)  # is this required?
 
     vis_type = "defacing"
 
@@ -821,8 +830,8 @@ def make_workflow_from_user_options():
     out_dir = check_out_dir(user_args.out_dir, user_dir)
 
     wf = RatingWorkflowDefacing(
-        id_list,
-        images_for_id,
+        id_list,  # id_list is a list of paths to directories with original and defaced images
+        images_for_id,  # ? I have never used this argument. What's this for?
         user_dir,
         out_dir,
         defaced_name,
